@@ -1,0 +1,354 @@
+generator client {
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "rhel-openssl-3.0.x", "linux-arm64-openssl-1.0.x"]
+  previewFeatures = ["relationJoins"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model HousePriceIndex {
+  id                Int      @id @default(autoincrement())
+  date              DateTime
+  region            String
+  index             Float
+  detachedIndex     Float?   @map("detached_index")
+  semiDetachedIndex Float?   @map("semi_detached_index")
+  terracedIndex     Float?   @map("terraced_index")
+  flatIndex         Float?   @map("flat_index")
+
+  @@unique([date, region], map: "unique")
+  @@index([date], map: "date")
+  @@index([region], map: "region")
+  @@map("house_price_index")
+}
+
+model Listing {
+  id              String        @unique
+  user            User          @relation(fields: [userId], references: [id])
+  userId          String        @map("user_id")
+  property        Property      @relation(fields: [propertyId], references: [id])
+  propertyId      String        @map("property_id")
+  title           String?
+  description     String?       @db.Text
+  price           Int?
+  status          ListingStatus @default(DRAFT)
+  termsAcceptedAt DateTime?     @map("terms_accepted_at")
+  featuredImageId String?       @map("featuredImageId")
+  payments        Payment[]
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @default(now()) @updatedAt @map("updated_at")
+
+  @@map("listings")
+}
+
+enum ListingStatus {
+  DRAFT
+  ACTIVE
+  SOLD_STC
+  UNDER_OFFER
+  COMPLETED
+  PENDING
+  REVIEW
+  EXPIRED
+}
+
+model Payment {
+  id              String        @id @unique
+  paymentIntentId String        @unique @map("payment_intent_id")
+  amount          Int
+  status          PaymentStatus @default(PENDING)
+  listing         Listing       @relation(fields: [listingId], references: [id])
+  listingId       String        @map("listing_id")
+  method          String?
+  paidAt          DateTime?     @map("paid_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @default(now()) @updatedAt @map("updated_at")
+
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  DECLINED
+}
+
+model Postcode {
+  id         Int     @id @default(autoincrement())
+  postcode   String  @unique() @db.VarChar(20)
+  area       String  @db.VarChar(5)
+  district   String  @db.VarChar(10)
+  latitude   Decimal @db.Decimal(12, 8)
+  longitude  Decimal @db.Decimal(12, 8)
+  regionName String  @map("region_name") @db.VarChar(100)
+  active     Boolean @default(true)
+
+  @@map("postcodes")
+}
+
+model Property {
+  id                 String                       @id @unique
+  fingerprint        String                       @unique
+  listings           Listing[]
+  paon               String
+  saon               String?
+  street             String
+  city               String?
+  postcode           String
+  type               PropertyType?
+  detachment         PropertyDetachment?
+  tenure             PropertyTenure?
+  habitableRooms     Int?                         @map("habitable_rooms")
+  bedrooms           Int?
+  bathrooms          Int?
+  latitude           Decimal?                     @db.Decimal(12, 8)
+  longitude          Decimal?                     @db.Decimal(12, 8)
+  epcs               PropertyEpc[]
+  floors             PropertyFloor[]
+  images             PropertyImage[]
+  rooms              PropertyRoom[]
+  transactionHistory PropertyTransactionHistory[]
+  valuations         PropertyValuation[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([paon, saon, street, postcode], map: "properties_existing")
+  @@index([paon, street, postcode], map: "properties_existing_no_saon")
+  @@index([postcode], map: "properties_postcode")
+  @@map("properties")
+}
+
+enum PropertyType {
+  HOUSE
+  FLAT
+  BUNGALOW
+  MAISONETTE
+  COTTAGE
+  PARK_HOME
+}
+
+enum PropertyDetachment {
+  DETACHED
+  SEMI_DETACHED
+  END_TERRACE
+  MID_TERRACE
+}
+
+enum PropertyTenure {
+  FREEHOLD
+  LEASEHOLD
+}
+
+model PropertyEpc {
+  lmk                          String             @id @unique()
+  property                     Property           @relation(fields: [propertyId], references: [id])
+  propertyId                   String             @unique() @map("property_id")
+  potentialEnergyRating        String             @map("potential_energy_rating")
+  currentEnergyRating          String             @map("current_energy_rating")
+  potentialEnergyEfficiency    Float              @map("potential_energy_efficiency")
+  currentEnergyEfficiency      Float              @map("current_energy_efficiency")
+  builtForm                    PropertyDetachment @map("built_form")
+  propertyType                 PropertyType       @map("property_type")
+  potentialEnvironmentalImpact Float              @map("potential_environmental_impact")
+  currentEnvironmentalImpact   Float              @map("current_environmental_impact")
+  mainsGas                     Boolean            @map("mains_gas")
+  habitableRooms               Int                @map("habitable_rooms")
+  totalFloorArea               Float              @map("total_floor_area")
+  totalFloorSqft               Float              @map("total_floor_sqft")
+  lodgedAt                     DateTime           @map("lodged_at")
+  createdAt                    DateTime           @default(now()) @map("created_at")
+  updatedAt                    DateTime           @default(now()) @updatedAt @map("updated_at")
+
+  @@map("property_epcs")
+}
+
+model PropertyFloor {
+  id         String            @id @unique()
+  property   Property          @relation(fields: [propertyId], references: [id])
+  propertyId String            @map("property_id")
+  type       PropertyFloorType
+  rooms      PropertyRoom[]
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @default(now()) @updatedAt @map("updated_at")
+
+  @@map("property_floors")
+}
+
+enum PropertyFloorType {
+  BASEMENT
+  GROUND
+  FIRST
+  SECOND
+  THIRD
+}
+
+model PropertyImage {
+  id         String        @id @unique(map: "property_images_id_unique")
+  property   Property      @relation(fields: [propertyId], references: [id])
+  propertyId String        @map("property_id")
+  room       PropertyRoom? @relation(fields: [roomId], references: [id])
+  roomId     String?       @map("room_id")
+  path       String
+  filename   String
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @default(now()) @updatedAt @map("updated_at")
+
+  @@map("property_images")
+}
+
+model PropertyRoom {
+  id          String           @id @unique(map: "property_rooms_id_unique")
+  property    Property         @relation(fields: [propertyId], references: [id])
+  propertyId  String           @map("property_id")
+  floor       PropertyFloor    @relation(fields: [floorId], references: [id])
+  floorId     String           @map("floor_id")
+  name        String
+  type        PropertyRoomType
+  description String?
+  ensuite     Boolean?
+  length      Float?
+  width       Float?
+  height      Float?
+  images      PropertyImage[]
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @default(now()) @updatedAt @map("updated_at")
+
+  @@map("property_rooms")
+}
+
+enum PropertyRoomType {
+  BEDROOM
+  BATHROOM
+  KITCHEN
+  LIVING_ROOM
+  DINING_ROOM
+  STUDY
+  UTILITY_ROOM
+  GARAGE
+  CELLAR
+  CONSERVATORY
+  MEDIA_ROOM
+  GYM
+  POOL
+  LIBRARY
+  STORAGE
+  OTHER
+}
+
+model PropertyTransactionHistory {
+  tuid       String   @id @unique(map: "property_transaction_history_tuid_unique") @db.VarChar(50)
+  property   Property @relation(fields: [propertyId], references: [id])
+  propertyId String   @map("property_id")
+  price      Int
+  date       DateTime
+  postcode   String   @db.VarChar(10)
+  paon       String
+  saon       String?
+  street     String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+  city       String?
+
+  @@index([city], map: "city")
+  @@index([postcode], map: "postcode")
+  @@index([propertyId], map: "property_idx")
+  @@map("property_transaction_history")
+}
+
+model PropertyValuation {
+  id                 String                @id @unique(map: "property_valuations_id_unique")
+  type               PropertyValuationType @default(INDIVIDUAL)
+  property           Property?             @relation(fields: [propertyId], references: [id])
+  propertyId         String?               @map("property_id")
+  user               User?                 @relation(fields: [userId], references: [id])
+  userId             String?               @map("user_id")
+  date               DateTime
+  valuation          Int
+  valuationLastMonth Int?                  @map("valuation_last_month")
+  postcode           String                @db.VarChar(10)
+  region             String?               @db.VarChar(100)
+  tuidsUsed          Json                  @map("tuids_used")
+  createdAt          DateTime              @default(now()) @map("created_at")
+  updatedAt          DateTime              @default(now()) @updatedAt @map("updated_at")
+
+  @@index([propertyId], map: "property_idx")
+  @@index([userId], map: "user_idx")
+  @@map("property_valuations")
+}
+
+enum PropertyValuationType {
+  AREA
+  INDIVIDUAL
+}
+
+model UserAccessToken {
+  id        String   @unique(map: "user_access_tokens_id_unique")
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  token     String   @unique(map: "user_access_tokens_tokenx")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("user_access_tokens")
+}
+
+model UserLoginHistory {
+  id        String   @unique(map: "user_login_history_id_unique")
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  userAgent String   @map("user_agent")
+  ip        String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("user_login_history")
+}
+
+model UserMagicLink {
+  id         String    @unique(map: "user_magic_links_id_unique")
+  user       User      @relation(fields: [userId], references: [id])
+  userId     String    @map("user_id")
+  token      String
+  next       String?
+  code       String
+  clientCode String    @map("client_code")
+  redeemedAt DateTime? @map("redeemed_at")
+  redeemedIp String?   @map("redeemed_ip")
+  expiresAt  DateTime  @map("expires_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@map("user_magic_links")
+}
+
+model User {
+  id               String              @unique(map: "users_id_unique")
+  email            String              @unique(map: "users_email_idx")
+  name             String
+  phone            String?
+  acceptsMarketing Boolean             @default(false) @map("accepts_marketing")
+  initialType      UserType?           @map("initial_type")
+  lastUsedType     UserType?           @map("last_used_type")
+  role             UserRole            @default(USER)
+  listings         Listing[]
+  valuations       PropertyValuation[]
+  magicLinks       UserMagicLink[]
+  accessTokens     UserAccessToken[]
+  loginHistory     UserLoginHistory[]
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @default(now()) @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+enum UserType {
+  BUYER
+  SELLER
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}

@@ -1,0 +1,31 @@
+{
+  "name": "price-paid",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cd ../../ && sst dev PricePaid",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.515.0",
+    "@paralleldrive/cuid2": "^2.2.2",
+    "aws-lambda": "^1.0.7",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.4.4",
+    "drizzle-orm": "^0.29.3",
+    "api": "workspace:*",
+    "mysql2": "^3.9.1",
+    "node-fetch": "^3.3.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.134",
+    "@types/node": "^20.11.19",
+    "@types/node-fetch": "^2.6.11",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "fonts",
+  "version": "1.0.0",
+  "dependencies": {
+    "next": "^13.5.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  }
+}

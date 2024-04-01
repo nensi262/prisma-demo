@@ -1,0 +1,52 @@
+{
+  "name": "portal",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:push": "prisma db push",
+    "dev:email": "email dev --dir=src/components/emails --port=3001"
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^1.16.2",
+    "@heroicons/react": "^2.1.1",
+    "@sentry/nextjs": "^7.101.1",
+    "@stripe/react-stripe-js": "^2.5.0",
+    "@stripe/stripe-js": "^3.0.3",
+    "drawer": "workspace:*",
+    "fonts": "workspace:*",
+    "framer-motion": "^11.0.5",
+    "hooks": "workspace:*",
+    "lucide-react": "^0.331.0",
+    "nanoid": "^5.0.5",
+    "next": "14.1.0",
+    "nookies": "^2.5.2",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "sharp": "^0.33.2",
+    "stripe": "^14.17.0",
+    "superjson": "^2.2.1",
+    "swr": "^2.2.5",
+    "typescript": "5.3.3",
+    "ui": "workspace:*",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/google.maps": "^3.54.3",
+    "@types/node": "20.11.19",
+    "api": "workspace:*",
+    "@types/react": "18.2.55",
+    "@types/react-dom": "18.2.19",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
+    "@typescript-eslint/parser": "^7.0.1",
+    "autoprefixer": "10.4.17",
+    "eslint": "8.56.0",
+    "eslint-config-next": "14.1.0",
+    "postcss": "8.4.35",
+    "tailwind-config": "workspace:*",
+    "tailwindcss": "3.4.1"
+  }
+}

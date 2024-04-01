@@ -1,0 +1,32 @@
+{
+  "name": "moove.house",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "start": "turbo start",
+    "start:cms": "turbo start --filter cms",
+    "lint": "turbo lint",
+    "clean": "turbo clean",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "sst:dev": "sst dev",
+    "sst:build": "sst build",
+    "sst:deploy": "sst deploy",
+    "sst:remove": "sst remove",
+    "sst:console": "sst console"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "aws-cdk-lib": "^2.128.0",
+    "constructs": "^10.3.0",
+    "eslint": "^8.48.0",
+    "prettier": "^3.0.3",
+    "prettier-plugin-organize-imports": "^3.2.3",
+    "sst": "^2.40.3",
+    "turbo": "^1.12.5"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.4"
+  }
+}

@@ -1,0 +1,56 @@
+name: Home - Staging Deployment
+
+on:
+  workflow_dispatch:
+  # push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    environment: "Preview - Home"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Use pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+
+      - name: Install
+        run: pnpm install
+
+      - name: Inject Environment Variables
+        run: |
+          cd apps/api
+          touch .env
+          echo "DATABASE_URL=${{secrets.STAGING_DATABASE_URL}}" >> .env
+          echo "JWT_SECRET=${{secrets.JWT_SECRET}}" >> .env
+          echo "EPC_SECRET=${{secrets.EPC_SECRET}}" >> .env
+          echo "EPC_USERNAME=${{secrets.EPC_USERNAME}}" >> .env
+          echo "GETADDRESS_API_KEY=${{secrets.GETADDRESS_API_KEY}}" >> .env
+          echo "GOOGLE_API_KEY=${{secrets.GOOGLE_API_KEY}}" >> .env
+          echo "OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}}" >> .env
+          echo "STRIPE_SECRET_KEY=${{secrets.STRIPE_SECRET_KEY_STAGING}}" >> .env
+          echo "STRIPE_WEBHOOK_SECRET=${{secrets.STRIPE_WEBHOOK_SECRET_STAGING}}" >> .env
+          echo "PORTAL_DOMAIN=${{vars.PORTAL_DOMAIN_STAGING}}" >> .env
+
+      - name: Build & Deploy
+        run: pnpm sst:deploy Home --stage=staging
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "eu-west-2"
